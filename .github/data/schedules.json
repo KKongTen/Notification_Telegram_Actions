@@ -6,9 +6,9 @@
       "title": "테스트",
       "message": "테스트111",
       "datetime": "2026-08-03T00:29:00+09:00",
-      "status": "pending",
+      "status": "sent",
       "created_at": "2026-08-02T15:27:39.523Z",
-      "sent_at": null
+      "sent_at": "2026-08-03T01:04:51.082680+09:00"
     }
   ]
 }

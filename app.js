@@ -80,12 +80,11 @@ document.addEventListener('DOMContentLoaded', () => {
     elTgChatId.value = config.tgChatId;
   }
 
-  // Set default datetime picker to now + 5 minutes
+  // Set default datetime picker to exact current time as min limit
   function setDefaultDatetimePicker() {
     const now = new Date();
-    now.setMinutes(now.getMinutes() + 5);
 
-    // Set min attribute to prevent selecting past time
+    // Set min attribute to exact CURRENT time (so 1 minute later is completely valid!)
     const minYear = now.getFullYear();
     const minMonth = String(now.getMonth() + 1).padStart(2, '0');
     const minDay = String(now.getDate()).padStart(2, '0');
@@ -93,11 +92,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const minMinutes = String(now.getMinutes()).padStart(2, '0');
     elInputDatetime.min = `${minYear}-${minMonth}-${minDay}T${minHours}:${minMinutes}`;
     
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
+    // Default display value: 2 minutes after now
+    const defaultTime = new Date(now.getTime() + 2 * 60 * 1000);
+    const year = defaultTime.getFullYear();
+    const month = String(defaultTime.getMonth() + 1).padStart(2, '0');
+    const day = String(defaultTime.getDate()).padStart(2, '0');
+    const hours = String(defaultTime.getHours()).padStart(2, '0');
+    const minutes = String(defaultTime.getMinutes()).padStart(2, '0');
 
     elInputDatetime.value = `${year}-${month}-${day}T${hours}:${minutes}`;
   }
@@ -443,7 +444,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const title = elInputTitle.value.trim();
-    const datetimeVal = elInputDatetime.value; // e.g. "2026-08-02T23:59"
+    const datetimeVal = elInputDatetime.value; // e.g. "2026-08-02T23:49"
     const message = elInputMessage.value.trim();
     const immediateTrigger = elCheckImmediateTrigger.checked;
 

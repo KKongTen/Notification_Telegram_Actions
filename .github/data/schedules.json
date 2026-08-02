@@ -1,4 +1,14 @@
 {
   "daily_limit": 30,
-  "schedules": []
+  "schedules": [
+    {
+      "id": "item_1785679470693",
+      "title": "이력서 검토",
+      "message": "그리팅 / 2건(레몬베이스/엘리스) 검토 후 답변",
+      "datetime": "2026-08-02T23:30:00+09:00",
+      "status": "pending",
+      "created_at": "2026-08-02T14:04:30.693Z",
+      "sent_at": null
+    }
+  ]
 }

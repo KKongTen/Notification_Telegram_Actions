@@ -1,0 +1,26 @@
+name: ⏰ 새 텔레그램 알림 예약
+description: GitHub Issue 양식을 작성하여 텔레그램 알림을 예약합니다.
+title: "[예약] "
+labels: ["notification-schedule"]
+body:
+  - type: input
+    id: title
+    attributes:
+      label: 알림 제목
+      placeholder: "예: 팀 주간 회의 시작전 준비"
+    validations:
+      required: true
+  - type: input
+    id: datetime
+    attributes:
+      label: 예약 일시 (KST, YYYY-MM-DD HH:MM)
+      placeholder: "예: 2026-08-03 15:30"
+    validations:
+      required: true
+  - type: textarea
+    id: message
+    attributes:
+      label: 알림 메세지 내용
+      placeholder: "텔레그램으로 수신할 내용을 작성해 주세요."
+    validations:
+      required: true

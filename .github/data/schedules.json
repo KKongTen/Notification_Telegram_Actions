@@ -1,4 +1,14 @@
 {
   "daily_limit": 30,
-  "schedules": []
+  "schedules": [
+    {
+      "id": "item_1785678660434",
+      "title": "테스트",
+      "message": "테스트1234",
+      "datetime": "2026-08-02T13:51:00.000+09:00",
+      "status": "pending",
+      "created_at": "2026-08-02T13:51:00.434Z",
+      "sent_at": null
+    }
+  ]
 }

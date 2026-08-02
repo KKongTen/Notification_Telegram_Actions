@@ -80,10 +80,15 @@ document.addEventListener('DOMContentLoaded', () => {
     elTgChatId.value = config.tgChatId;
   }
 
-  // Set default datetime picker to now + 10 minutes (formatted for datetime-local in KST)
+  // Set default datetime picker to the next 30-minute interval (00 or 30)
   function setDefaultDatetimePicker() {
     const now = new Date();
-    now.setMinutes(now.getMinutes() + 10);
+    let m = now.getMinutes();
+    if (m < 30) {
+      now.setMinutes(30, 0, 0);
+    } else {
+      now.setHours(now.getHours() + 1, 0, 0, 0);
+    }
     
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -359,7 +364,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const isPending = item.status === 'pending';
       
       // Exact parsing without JS timezone shifts
-      const dtStr = item.datetime; // e.g., "2026-08-02T22:59:00+09:00"
+      const dtStr = item.datetime; // e.g., "2026-08-02T23:00:00+09:00"
       let timeStr = dtStr;
       const match = dtStr.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
       if (match) {
@@ -435,7 +440,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const title = elInputTitle.value.trim();
-    const datetimeVal = elInputDatetime.value; // e.g. "2026-08-02T22:59"
+    const datetimeVal = elInputDatetime.value; // e.g. "2026-08-02T23:00"
     const message = elInputMessage.value.trim();
     const immediateTrigger = elCheckImmediateTrigger.checked;
 

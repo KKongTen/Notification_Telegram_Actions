@@ -42,6 +42,18 @@ You can easily schedule notifications using either the web dashboard (GitHub Pag
    - `TELEGRAM_BOT_TOKEN`: 봇 생성 시 전달받은 API Token 값
    - `TELEGRAM_CHAT_ID`: 텔레그램 숫자 Chat ID 값
 
+#### 3. GitHub Personal Access Token (PAT) 발급 (웹 대시보드 사용 시 필요)
+웹 대시보드에서 알림 예약을 등록하거나 수동 실행을 하려면 권한이 부여된 PAT가 필요합니다. (GitHub Issue 방식을 사용할 경우 발급할 필요 없음)
+1. GitHub 프로필 클릭 -> `Settings` -> `Developer settings` -> `Personal access tokens`로 이동합니다.
+2. **Fine-grained token** 생성 시 필수 권한:
+   - `Repository access`: 해당 저장소(`Notification_Telegram_Actions`) 선택
+   - `Repository permissions`:
+     - **Contents**: `Read and write` (알림 데이터 저장에 필수)
+     - **Workflows**: `Read and write` (즉시 동기화 실행에 필요)
+3. **Classic token** 생성 시 필수 권한:
+   - **`repo`** (Full control of private repositories) 전체 선택
+   - **`workflow`** 선택
+
 ---
 
 ### 사용 방법
@@ -109,6 +121,18 @@ You can easily schedule notifications using either the web dashboard (GitHub Pag
 2. Click `New repository secret` and add the following two secrets:
    - `TELEGRAM_BOT_TOKEN`: The API Token received from BotFather
    - `TELEGRAM_CHAT_ID`: Your numeric Telegram Chat ID
+
+#### 3. Issue GitHub Personal Access Token (PAT) (Required for Web Dashboard)
+Required to update schedule data or trigger actions via the Web Dashboard (Not required if using GitHub Issues).
+1. Click GitHub Profile -> `Settings` -> `Developer settings` -> `Personal access tokens`.
+2. For **Fine-grained tokens**, grant the following permissions:
+   - `Repository access`: Select your repository (`Notification_Telegram_Actions`)
+   - `Repository permissions`:
+     - **Contents**: `Read and write` (Required to save schedules)
+     - **Workflows**: `Read and write` (Required for immediate dispatch)
+3. For **Classic tokens**, grant:
+   - **`repo`** (Full control of repositories)
+   - **`workflow`**
 
 ---
 

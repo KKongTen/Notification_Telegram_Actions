@@ -298,7 +298,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function getKSTDateString(dt) {
-    // Format YYYY-MM-DD in KST
     const kstMs = dt.getTime() + (9 * 60 * 60 * 1000) + (dt.getTimezoneOffset() * 60 * 1000);
     const kstDt = new Date(kstMs);
     const y = kstDt.getFullYear();
@@ -435,7 +434,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const title = elInputTitle.value.trim();
-    const datetimeVal = elInputDatetime.value;
+    const datetimeVal = elInputDatetime.value; // e.g. "2026-08-02T22:56"
     const message = elInputMessage.value.trim();
     const immediateTrigger = elCheckImmediateTrigger.checked;
 
@@ -444,9 +443,9 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Convert datetime-local value to ISO string with KST (+09:00)
-    const selectedDt = new Date(datetimeVal);
-    const isoKstStr = selectedDt.toISOString().replace('Z', '+09:00');
+    // Correctly format ISO string with KST (+09:00) without double timezone shifts
+    const formattedDatetime = datetimeVal.length === 16 ? `${datetimeVal}:00` : datetimeVal;
+    const isoKstStr = `${formattedDatetime}+09:00`;
 
     const newItem = {
       id: 'item_' + Date.now(),

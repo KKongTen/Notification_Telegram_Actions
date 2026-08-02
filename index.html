@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="style.css?v=1.0.2">
+  <link rel="stylesheet" href="style.css?v=1.0.3">
 </head>
 <body>
 
@@ -50,7 +50,7 @@
     <section class="dashboard-hero card">
       <div class="hero-content">
         <h1>예약 알림 대시보드 🚀</h1>
-        <p>웹에서 예약하면 GitHub Actions가 지정된 시간에 내 텔레그램으로 알림을 보내줍니다.</p>
+        <p>웹에서 예약하면 지정된 시간에 맞춰 텔레그램으로 정밀 알림을 보내줍니다.</p>
         
         <!-- Progress Bar for 30 Limit -->
         <div class="usage-progress-container">
@@ -109,12 +109,12 @@
             </div>
 
             <div class="form-group">
-              <label for="inputDatetime">예약 날짜 및 시간 (KST - 30분 단위)</label>
+              <label for="inputDatetime">예약 날짜 및 시간 (KST - 1분 단위 선택 가능)</label>
               <div class="input-wrapper">
                 <i class="fa-regular fa-calendar-days input-icon"></i>
-                <input type="datetime-local" id="inputDatetime" step="1800" required>
+                <input type="datetime-local" id="inputDatetime" step="60" required>
               </div>
-              <small class="help-text">30분 단위(00분, 30분)로 선택 시 정시에 알림이 전송됩니다.</small>
+              <small class="help-text">원하시는 정확한 시간에 알림을 예약할 수 있습니다.</small>
             </div>
 
             <div class="form-group">
@@ -129,9 +129,9 @@
               <label class="checkbox-label">
                 <input type="checkbox" id="checkImmediateTrigger" checked>
                 <span class="custom-checkbox"></span>
-                <span>알림 등록 후 GitHub Action 즉시 동기화 트리거</span>
+                <span>알림 등록 후 Action 즉시 동기화 (정밀 시간 대기 발송)</span>
               </label>
-              <small class="help-text">30분 주기 Cron을 기다리지 않고 예약시점에 맞춰 Action을 즉시 동작시킵니다.</small>
+              <small class="help-text">예약 즉시 Action이 동작하여 지정된 시간 정각 00초에 텔레그램 메시지를 보냅니다.</small>
             </div>
 
             <button type="submit" id="btnSubmitSchedule" class="btn btn-primary btn-block">
@@ -223,6 +223,6 @@
   <!-- Toast Notification Container -->
   <div id="toastContainer" class="toast-container"></div>
 
-  <script src="app.js?v=1.0.2"></script>
+  <script src="app.js?v=1.0.3"></script>
 </body>
 </html>

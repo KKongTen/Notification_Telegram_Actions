@@ -80,10 +80,11 @@ document.addEventListener('DOMContentLoaded', () => {
     elTgChatId.value = config.tgChatId;
   }
 
-  // Set default datetime picker to the next 30-minute interval and set min attribute to current time
+  // Set default datetime picker to now + 5 minutes
   function setDefaultDatetimePicker() {
     const now = new Date();
-    
+    now.setMinutes(now.getMinutes() + 5);
+
     // Set min attribute to prevent selecting past time
     const minYear = now.getFullYear();
     const minMonth = String(now.getMonth() + 1).padStart(2, '0');
@@ -91,14 +92,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const minHours = String(now.getHours()).padStart(2, '0');
     const minMinutes = String(now.getMinutes()).padStart(2, '0');
     elInputDatetime.min = `${minYear}-${minMonth}-${minDay}T${minHours}:${minMinutes}`;
-
-    // Set default value to next 30-min slot
-    let m = now.getMinutes();
-    if (m < 30) {
-      now.setMinutes(30, 0, 0);
-    } else {
-      now.setHours(now.getHours() + 1, 0, 0, 0);
-    }
     
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -256,7 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       if (response.ok || response.status === 204) {
-        showToast('🚀 GitHub Actions 실행이 개시되었습니다!', 'success');
+        showToast('🚀 GitHub Actions 정밀 대기 실행이 개시되었습니다!', 'success');
       } else {
         console.warn('Dispatch failed:', response.status);
       }
@@ -374,7 +367,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const isPending = item.status === 'pending';
       
       // Exact parsing without JS timezone shifts
-      const dtStr = item.datetime; // e.g., "2026-08-02T23:00:00+09:00"
+      const dtStr = item.datetime; // e.g., "2026-08-02T23:59:00+09:00"
       let timeStr = dtStr;
       const match = dtStr.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
       if (match) {
@@ -450,7 +443,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const title = elInputTitle.value.trim();
-    const datetimeVal = elInputDatetime.value; // e.g. "2026-08-02T23:00"
+    const datetimeVal = elInputDatetime.value; // e.g. "2026-08-02T23:59"
     const message = elInputMessage.value.trim();
     const immediateTrigger = elCheckImmediateTrigger.checked;
 

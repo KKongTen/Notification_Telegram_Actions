@@ -4,6 +4,7 @@
 import json
 import os
 import sys
+import time
 import urllib.request
 import urllib.parse
 from datetime import datetime, timezone, timedelta
@@ -42,6 +43,7 @@ def send_telegram_message(token, chat_id, text):
             res_body = response.read().decode('utf-8')
             res_json = json.loads(res_body)
             if res_json.get("ok"):
+                print("[SUCCESS] Telegram message sent successfully!")
                 return True
             else:
                 print(f"[ERROR] Telegram API Error: {res_json}")
@@ -52,7 +54,6 @@ def send_telegram_message(token, chat_id, text):
 
 def parse_iso_datetime(dt_str):
     try:
-        # ISO 형식 파싱
         if dt_str.endswith('Z'):
             dt_str = dt_str[:-1] + '+00:00'
         dt = datetime.fromisoformat(dt_str)
@@ -64,6 +65,7 @@ def parse_iso_datetime(dt_str):
         return None
 
 def main():
+    print("=== Precise Telegram Notifier Started ===")
     if not os.path.exists(JSON_PATH):
         print(f"[ERROR] JSON file not found at {JSON_PATH}")
         sys.exit(1)
@@ -80,6 +82,8 @@ def main():
     now_kst = datetime.now(KST)
     today_str = now_kst.strftime("%Y-%m-%d")
     
+    print(f"[TIME] Current KST Time: {now_kst.strftime('%Y-%m-%d %H:%M:%S KST')}")
+
     # 오늘 (KST 기준) 이미 전송된 알림 개수 세기
     sent_today_count = 0
     for item in schedules:
@@ -88,53 +92,68 @@ def main():
             if sent_dt and sent_dt.astimezone(KST).strftime("%Y-%m-%d") == today_str:
                 sent_today_count += 1
                 
-    print(f"[{now_kst.strftime('%Y-%m-%d %H:%M:%S KST')}] Daily limit check: {sent_today_count} / {daily_limit} sent today.")
-    
     if sent_today_count >= daily_limit:
         print(f"[WARNING] Reached daily limit ({daily_limit}). Skipping pending notifications for today.")
         sys.exit(0)
         
     updated_count = 0
     
+    # Sort pending items by scheduled time
+    pending_items = []
     for item in schedules:
-        if item.get("status") != "pending":
-            continue
-            
-        target_dt = parse_iso_datetime(item.get("datetime"))
-        if not target_dt:
-            continue
-            
-        # 예약 시간이 현재 시간이거나 지난 경우
-        if target_dt <= now_kst:
-            if sent_today_count >= daily_limit:
-                print(f"[WARNING] Daily limit of {daily_limit} reached mid-processing!")
-                # 초과 통지 메세지 1회 전송 시도
-                send_telegram_message(
-                    token, chat_id,
-                    f"⚠️ <b>[텔레그램 알림이 경고]</b>\n오늘 일일 알림 한도({daily_limit}회)에 도달하여 추가 알림 발송이 일시 중단됩니다."
-                )
-                break
+        if item.get("status") == "pending":
+            dt_obj = parse_iso_datetime(item.get("datetime"))
+            if dt_obj:
+                pending_items.append((dt_obj, item))
                 
-            title = item.get("title", "🔔 예약 알림")
-            message = item.get("message", "")
-            time_display = target_dt.astimezone(KST).strftime("%Y-%m-%d %H:%M")
-            
-            telegram_text = (
-                f"🔔 <b>[텔레그램 알림이] {title}</b>\n\n"
-                f"📝 {message}\n\n"
-                f"⏰ <i>예약일시: {time_display}</i>"
+    pending_items.sort(key=lambda x: x[0])
+    
+    for target_dt, item in pending_items:
+        current_now = datetime.now(KST)
+        remaining_seconds = (target_dt - current_now).total_seconds()
+        
+        print(f"[SCHEDULE CHECK] Title='{item.get('title')}', Scheduled={target_dt.strftime('%Y-%m-%d %H:%M:%S KST')}, Remaining={remaining_seconds:.1f}s")
+
+        # Case 1: 이미 예약 시간이 지난 경우 -> 즉시 발송
+        # Case 2: 미래 15분(900초) 이내의 예약인 경우 -> 정밀 대기 후 00초 정각에 발송
+        if remaining_seconds > 900:
+            print(f"[INFO] Next schedule is more than 15 minutes away ({remaining_seconds/60:.1f}m). Will be picked up by next trigger.")
+            break
+
+        if remaining_seconds > 0:
+            print(f"[PRECISION WAIT] Waiting {remaining_seconds:.1f} seconds until target time {target_dt.strftime('%H:%M:%S KST')}...")
+            time.sleep(remaining_seconds)
+            current_now = datetime.now(KST)
+
+        # 발송 처리
+        if sent_today_count >= daily_limit:
+            print(f"[WARNING] Daily limit reached during processing.")
+            send_telegram_message(
+                token, chat_id,
+                f"⚠️ <b>[텔레그램 알림이 경고]</b>\n오늘 일일 알림 한도({daily_limit}회)에 도달하여 추가 알림 발송이 일시 중단됩니다."
             )
+            break
             
-            print(f"[INFO] Sending notification: ID={item.get('id')}, Title={title}")
-            success = send_telegram_message(token, chat_id, telegram_text)
-            
-            if success:
-                item["status"] = "sent"
-                item["sent_at"] = now_kst.isoformat()
-                sent_today_count += 1
-                updated_count += 1
-            else:
-                print(f"[ERROR] Failed to send notification ID={item.get('id')}")
+        title = item.get("title", "🔔 예약 알림")
+        message = item.get("message", "")
+        time_display = target_dt.astimezone(KST).strftime("%Y-%m-%d %H:%M")
+        
+        telegram_text = (
+            f"🔔 <b>[텔레그램 알림이] {title}</b>\n\n"
+            f"📝 {message}\n\n"
+            f"⏰ <i>예약일시: {time_display}</i>"
+        )
+        
+        print(f"[SENDING] Triggering Telegram API for '{title}' at {datetime.now(KST).strftime('%H:%M:%S KST')}...")
+        success = send_telegram_message(token, chat_id, telegram_text)
+        
+        if success:
+            item["status"] = "sent"
+            item["sent_at"] = datetime.now(KST).isoformat()
+            sent_today_count += 1
+            updated_count += 1
+        else:
+            print(f"[ERROR] Failed to send notification ID={item.get('id')}")
 
     if updated_count > 0:
         data["schedules"] = schedules

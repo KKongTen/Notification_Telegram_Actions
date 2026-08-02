@@ -16,24 +16,21 @@ def parse_issue_body(body_text):
     """
     title, dt_str, message = "", "", ""
     
-    # Title 파싱
     title_match = re.search(r'### 알림 제목\s*\n\s*(.*?)(?=\n###|\Z)', body_text, re.DOTALL)
     if title_match:
         title = title_match.group(1).strip()
         
-    # Datetime 파싱
     dt_match = re.search(r'### 예약 일시.*?\n\s*(.*?)(?=\n###|\Z)', body_text, re.DOTALL)
     if dt_match:
         dt_str = dt_match.group(1).strip()
         
-    # Message 파싱
     msg_match = re.search(r'### 알림 메세지 내용\s*\n\s*(.*?)(?=\n###|\Z)', body_text, re.DOTALL)
     if msg_match:
         message = msg_match.group(1).strip()
 
     return title, dt_str, message
 
-def parse_datetime_to_kst_iso(dt_input_str):
+def parse_datetime_to_kst(dt_input_str):
     dt_input_str = dt_input_str.strip()
     formats = [
         "%Y-%m-%d %H:%M",
@@ -45,8 +42,7 @@ def parse_datetime_to_kst_iso(dt_input_str):
     for fmt in formats:
         try:
             dt = datetime.strptime(dt_input_str, fmt)
-            dt_kst = dt.replace(tzinfo=KST)
-            return dt_kst.isoformat()
+            return dt.replace(tzinfo=KST)
         except ValueError:
             pass
     return None
@@ -63,11 +59,18 @@ def main():
         print("[ERROR] Failed to parse datetime or message from Issue body.")
         sys.exit(1)
         
-    iso_dt = parse_datetime_to_kst_iso(dt_str)
-    if not iso_dt:
+    dt_kst = parse_datetime_to_kst(dt_str)
+    if not dt_kst:
         print(f"[ERROR] Invalid datetime format '{dt_str}'. Expected 'YYYY-MM-DD HH:MM'")
         sys.exit(1)
         
+    now_kst = datetime.now(KST)
+    if dt_kst <= now_kst:
+        print(f"[ERROR] Scheduled time '{dt_kst.isoformat()}' is in the past! Current time: '{now_kst.isoformat()}'")
+        sys.exit(1)
+        
+    iso_dt = dt_kst.isoformat()
+
     with open(JSON_PATH, 'r', encoding='utf-8') as f:
         data = json.load(f)
         

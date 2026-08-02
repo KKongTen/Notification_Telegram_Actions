@@ -80,9 +80,19 @@ document.addEventListener('DOMContentLoaded', () => {
     elTgChatId.value = config.tgChatId;
   }
 
-  // Set default datetime picker to the next 30-minute interval (00 or 30)
+  // Set default datetime picker to the next 30-minute interval and set min attribute to current time
   function setDefaultDatetimePicker() {
     const now = new Date();
+    
+    // Set min attribute to prevent selecting past time
+    const minYear = now.getFullYear();
+    const minMonth = String(now.getMonth() + 1).padStart(2, '0');
+    const minDay = String(now.getDate()).padStart(2, '0');
+    const minHours = String(now.getHours()).padStart(2, '0');
+    const minMinutes = String(now.getMinutes()).padStart(2, '0');
+    elInputDatetime.min = `${minYear}-${minMonth}-${minDay}T${minHours}:${minMinutes}`;
+
+    // Set default value to next 30-min slot
     let m = now.getMinutes();
     if (m < 30) {
       now.setMinutes(30, 0, 0);
@@ -446,6 +456,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!title || !datetimeVal || !message) {
       showToast('모든 양식을 입력해주세요.', 'warning');
+      return;
+    }
+
+    // Past Time Validation Check
+    const selectedDt = new Date(datetimeVal);
+    const now = new Date();
+    if (selectedDt <= now) {
+      showToast('⚠️ 예약 시간은 현재 시각 이후여야 합니다. (지나간 과거 시간은 예약할 수 없습니다)', 'warning');
+      elInputDatetime.focus();
       return;
     }
 

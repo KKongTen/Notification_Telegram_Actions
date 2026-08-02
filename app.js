@@ -335,7 +335,7 @@ document.addEventListener('DOMContentLoaded', () => {
     else displayItems = schedulesData.schedules;
 
     // Sort by datetime
-    displayItems.sort((a, b) => new Date(a.datetime) - new Date(b.datetime));
+    displayItems.sort((a, b) => a.datetime.localeCompare(b.datetime));
 
     renderScheduleItems(displayItems);
   }
@@ -357,13 +357,14 @@ document.addEventListener('DOMContentLoaded', () => {
       card.className = 'schedule-item';
 
       const isPending = item.status === 'pending';
-      const dtObj = new Date(item.datetime);
       
-      // Formatting datetime display
-      const timeStr = dtObj.toLocaleString('ko-KR', {
-        year: 'numeric', month: '2-digit', day: '2-digit',
-        hour: '2-digit', minute: '2-digit', hour12: false
-      });
+      // Exact parsing without JS timezone shifts
+      const dtStr = item.datetime; // e.g., "2026-08-02T22:59:00+09:00"
+      let timeStr = dtStr;
+      const match = dtStr.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+      if (match) {
+        timeStr = `${match[1]}. ${match[2]}. ${match[3]}. ${match[4]}:${match[5]}`;
+      }
 
       const badgeHtml = isPending
         ? `<span class="badge-status badge-pending"><i class="fa-regular fa-clock"></i> 발송 대기</span>`
@@ -377,7 +378,7 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
           <div class="item-message">${escapeHtml(item.message)}</div>
           <div class="item-meta">
-            <span><i class="fa-regular fa-calendar"></i> ${timeStr}</span>
+            <span><i class="fa-regular fa-calendar"></i> ${timeStr} (KST)</span>
             ${item.sent_at ? `<span><i class="fa-regular fa-circle-check"></i> 발송시각: ${new Date(item.sent_at).toLocaleTimeString('ko-KR')}</span>` : ''}
           </div>
         </div>
@@ -434,7 +435,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const title = elInputTitle.value.trim();
-    const datetimeVal = elInputDatetime.value; // e.g. "2026-08-02T22:56"
+    const datetimeVal = elInputDatetime.value; // e.g. "2026-08-02T22:59"
     const message = elInputMessage.value.trim();
     const immediateTrigger = elCheckImmediateTrigger.checked;
 
@@ -443,7 +444,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Correctly format ISO string with KST (+09:00) without double timezone shifts
+    // Absolutely exact string formatting for KST (+09:00)
     const formattedDatetime = datetimeVal.length === 16 ? `${datetimeVal}:00` : datetimeVal;
     const isoKstStr = `${formattedDatetime}+09:00`;
 

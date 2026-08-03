@@ -148,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const url = `https://api.github.com/repos/${config.ghOwner}/${config.ghRepo}/contents/${FILE_PATH}`;
     const headers = { 'Accept': 'application/vnd.github.v3+json' };
     if (config.ghToken) {
-      headers['Authorization'] = `token ${config.ghToken}`;
+      headers['Authorization'] = `Bearer ${config.ghToken}`;
     }
 
     try {
@@ -209,7 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
         method: 'PUT',
         headers: {
           'Accept': 'application/vnd.github.v3+json',
-          'Authorization': `token ${config.ghToken}`,
+          'Authorization': `Bearer ${config.ghToken}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(body)
@@ -234,6 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // GitHub REST API: Workflow Dispatch (Trigger Action immediately)
   async function triggerWorkflowDispatch() {
     if (!config.ghOwner || !config.ghRepo || !config.ghToken) {
+      showToast('GitHub 설정(Owner, Repo, Token)이 완료되어야 Actions를 실행할 수 있습니다.', 'warning');
       return;
     }
 
@@ -243,19 +244,25 @@ document.addEventListener('DOMContentLoaded', () => {
         method: 'POST',
         headers: {
           'Accept': 'application/vnd.github.v3+json',
-          'Authorization': `token ${config.ghToken}`,
+          'Authorization': `Bearer ${config.ghToken}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ ref: 'main' })
       });
 
       if (response.ok || response.status === 204) {
-        showToast('🚀 GitHub Actions 정밀 대기 실행이 개시되었습니다!', 'success');
+        showToast('🚀 GitHub Actions 즉시 동기화 실행이 개시되었습니다!', 'success');
       } else {
         console.warn('Dispatch failed:', response.status);
+        if (response.status === 404 || response.status === 403) {
+          showToast(`⚠️ Action 실행 실패 (${response.status}): GitHub 토큰(PAT)에 'workflow'(Classic) 또는 'Workflows: Read and Write'(Fine-grained) 권한이 활성화되어 있는지 확인해 주세요!`, 'error');
+        } else {
+          showToast(`⚠️ Action 실행 실패 (${response.status}): GitHub API 요청 중 오류가 발생했습니다.`, 'error');
+        }
       }
     } catch (err) {
       console.error('Dispatch trigger error:', err);
+      showToast(`❌ 네트워크 오류: Action 실행 요청을 전송하지 못했습니다.`, 'error');
     }
   }
 
@@ -490,6 +497,8 @@ document.addEventListener('DOMContentLoaded', () => {
       renderDashboard();
 
       if (immediateTrigger) {
+        // GitHub API 동기화 지연 대비 2초 대기 후 워크플로우 실행
+        await new Promise(resolve => setTimeout(resolve, 2000));
         await triggerWorkflowDispatch();
       }
     }

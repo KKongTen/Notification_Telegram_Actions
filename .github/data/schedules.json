@@ -24,9 +24,9 @@
       "title": "1234",
       "message": "1234",
       "datetime": "2026-08-03T09:29:00+09:00",
-      "status": "pending",
+      "status": "sent",
       "created_at": "2026-08-03T00:27:46.953Z",
-      "sent_at": null
+      "sent_at": "2026-08-03T09:29:00.719513+09:00"
     }
   ]
 }

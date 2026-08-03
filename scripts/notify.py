@@ -134,14 +134,16 @@ def main():
             )
             break
             
-        title = item.get("title", "🔔 예약 알림")
+        title = item.get("title", "예약 알림")
         message = item.get("message", "")
-        time_display = target_dt.astimezone(KST).strftime("%Y-%m-%d %H:%M")
+        time_display = target_dt.astimezone(KST).strftime("%Y-%m-%d %H-%M")
         
         telegram_text = (
-            f"🔔 <b>[텔레그램 알림이] {title}</b>\n\n"
-            f"📝 {message}\n\n"
-            f"⏰ <i>예약일시: {time_display}</i>"
+            f"<b>[Notification] {title}</b>\n"
+            f"----------------------------------------\n"
+            f"{message}\n"
+            f"----------------------------------------\n"
+            f"예약일시 : {time_display}"
         )
         
         print(f"[SENDING] Triggering Telegram API for '{title}' at {datetime.now(KST).strftime('%H:%M:%S KST')}...")
